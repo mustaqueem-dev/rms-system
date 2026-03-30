@@ -1,13 +1,16 @@
 // packages/shared-kernel/src/index.ts
 
+// ─── Core DDD primitives ──────────────────────────────────────────────────────
 export { Result }           from './core/result';
 export { Guard }            from './core/guard';
+export type { GuardArgument } from './core/guard';
 export { UniqueEntityId }   from './core/unique-entity-id';
 export { ValueObject }      from './core/value-object';
 export { BaseEntity }       from './core/base-entity';
 export { DomainEvent }      from './core/domain-event';
 export type { IDomainEvent } from './core/domain-event';
 
+// ─── Errors ───────────────────────────────────────────────────────────────────
 export {
   AppError,
   ValidationError,
@@ -20,6 +23,15 @@ export {
 } from './errors/app-error';
 export type { ErrorCode }   from './errors/app-error';
 
+export {
+  DomainError,
+  InvalidPriceError,
+  InvalidQuantityError,
+  InvalidStateTransitionError,
+  DuplicateEntryError,
+} from './errors/domain-error';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 export type {
   PaginationOptions,
   PaginatedResult,
@@ -29,3 +41,39 @@ export {
   buildPaginatedResult,
   DEFAULT_PAGINATION,
 } from './types/pagination.types';
+
+export type {
+  AuditFields,
+  CreateAuditFields,
+} from './types/audit.types';
+export {
+  buildCreateAudit,
+  buildUpdateAudit,
+  buildDeleteAudit,
+} from './types/audit.types';
+
+// ─── Infrastructure — Logging ─────────────────────────────────────────────────
+export type { ILogger, LogContext }    from './infrastructure/logger';
+export { ConsoleLogger }               from './infrastructure/logger';
+
+// ─── Infrastructure — Event publishing ───────────────────────────────────────
+export { EVENT_PUBLISHER }             from './infrastructure/event-publisher.interface';
+export type { IEventPublisher }        from './infrastructure/event-publisher.interface';
+export { InMemoryEventPublisher }      from './infrastructure/in-memory-event-publisher';
+
+// ─── Infrastructure — Auth / RBAC ────────────────────────────────────────────
+export {
+  UserRole,
+  ROLES_KEY,
+  Roles,
+  JwtAuthGuard,
+  RolesGuard,
+  Auth,
+} from './infrastructure/jwt-auth.guard';
+
+// ─── Infrastructure — Tenant context ─────────────────────────────────────────
+export type { TenantContext }          from './infrastructure/tenant-context';
+export { CurrentTenant, CurrentUserId } from './infrastructure/tenant-context';
+
+// ─── Infrastructure — Redis cache ────────────────────────────────────────────
+export { RedisCache }                  from './infrastructure/redis-cache';
