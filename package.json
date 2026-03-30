@@ -1,0 +1,17 @@
+// package.json  (workspace root)
+{
+  "name": "rms-backend",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "build":   "turbo run build",
+    "dev":     "turbo run dev --parallel",
+    "test":    "turbo run test",
+    "lint":    "turbo run lint",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
+  }
+}
