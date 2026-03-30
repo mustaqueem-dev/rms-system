@@ -1,6 +1,6 @@
-# RMS API Documentation
+# RMS API Documentation (Detailed)
 
-This document provides an overview of the microservices and their APIs in the Restaurant Management System (RMS).
+This document provides a comprehensive overview of the microservices and their APIs in the Restaurant Management System (RMS).
 
 ## Base URL
 The API Gateway serves as the single entry point:
@@ -13,12 +13,52 @@ Handles user registration, authentication, and profile management.
 **Target Service Port:** 3001
 **Gateway Path:** `/auth`
 
-| Endpoint | Method | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `/auth/register` | `POST` | Register a new user | No |
-| `/auth/login` | `POST` | Login and receive JWT | No |
-| `/auth/change-password` | `POST` | Change user password | Yes (Bearer) |
-| `/auth/me` | `GET` | Get current user profile | Yes (Bearer) |
+### Endpoints
+
+#### [POST] `/auth/register`
+Register a new user (Owner, Manager, Staff).
+- **Auth Required:** No
+- **Request Body:**
+  ```json
+  {
+    "email": "owner@restaurant.com",
+    "password": "Secret123!",
+    "name": "Ahmed Khan",
+    "role": "FRANCHISE_OWNER",
+    "franchiseId": "uuid-here",
+    "branchId": "optional-uuid-here"
+  }
+  ```
+- **Response (201):** `AuthResponseDto` (contains `accessToken` and `user` profile).
+
+#### [POST] `/auth/login`
+Login and receive a JWT.
+- **Auth Required:** No
+- **Request Body:**
+  ```json
+  {
+    "email": "owner@restaurant.com",
+    "password": "Secret123!"
+  }
+  ```
+- **Response (200):** `AuthResponseDto`.
+
+#### [POST] `/auth/change-password`
+Change current user password.
+- **Auth Required:** Yes (Bearer Token)
+- **Request Body:**
+  ```json
+  {
+    "oldPassword": "Secret123!",
+    "newPassword": "NewSecret456!"
+  }
+  ```
+- **Response (204):** No Content.
+
+#### [GET] `/auth/me`
+Get current user profile (decoded from token).
+- **Auth Required:** Yes (Bearer Token)
+- **Response (200):** User profile details including ID, email, name, role, franchiseId, and branchId.
 
 ---
 
@@ -27,14 +67,44 @@ Manages menu items, categories, and availability.
 **Target Service Port:** 3002
 **Gateway Path:** `/menu`
 
-| Endpoint | Method | Description | Roles Allowed |
-| :--- | :--- | :--- | :--- |
-| `/menu/items` | `POST` | Create a new menu item | Manager, Owner, Admin |
-| `/menu/items` | `GET` | List menu items | All Authenticated |
-| `/menu/items/:id` | `GET` | Get item details | All Authenticated |
-| `/menu/items/:id` | `PATCH` | Update menu item | Manager, Owner, Admin |
-| `/menu/items/:id` | `DELETE` | Delete menu item | Manager, Owner, Admin |
-| `/menu/items/:id/availability` | `PATCH` | Toggle item availability | Staff, Manager, Owner, Admin |
+### Endpoints
+
+#### [POST] `/menu/items`
+Create a new menu item.
+- **Auth Required:** Yes (Bearer Token)
+- **Roles Allowed:** `BRANCH_MANAGER`, `FRANCHISE_OWNER`, `SUPER_ADMIN`
+- **Request Body:** `CreateMenuItemDto`.
+- **Response (201):** `{ "id": "uuid" }`.
+
+#### [GET] `/menu/items`
+List menu items for the authenticated branch.
+- **Auth Required:** Yes (Bearer Token)
+- **Query Params:** `categoryId`, `isAvailable`, `tags`, `search`, `limit`, `offset`.
+- **Response (200):** Array of menu items.
+
+#### [GET] `/menu/items/:id`
+Get a single menu item by ID.
+- **Auth Required:** Yes (Bearer Token)
+- **Response (200):** Menu item object.
+
+#### [PATCH] `/menu/items/:id`
+Update a menu item (partial).
+- **Auth Required:** Yes (Bearer Token)
+- **Roles Allowed:** `BRANCH_MANAGER`, `FRANCHISE_OWNER`, `SUPER_ADMIN`
+- **Request Body:** `UpdateMenuItemDto`.
+- **Response (204):** No Content.
+
+#### [DELETE] `/menu/items/:id`
+Delete a menu item.
+- **Auth Required:** Yes (Bearer Token)
+- **Roles Allowed:** `BRANCH_MANAGER`, `FRANCHISE_OWNER`, `SUPER_ADMIN`
+- **Response (204):** No Content.
+
+#### [PATCH] `/menu/items/:id/availability`
+Toggle menu item availability.
+- **Auth Required:** Yes (Bearer Token)
+- **Roles Allowed:** `STAFF`, `BRANCH_MANAGER`, `FRANCHISE_OWNER`, `SUPER_ADMIN`
+- **Response (200):** `{ "isAvailable": boolean }`.
 
 ---
 
@@ -43,12 +113,34 @@ Tracks stock levels and inventory items.
 **Target Service Port:** 3003
 **Gateway Path:** `/inventory`
 
-| Endpoint | Method | Description | Roles Allowed |
-| :--- | :--- | :--- | :--- |
-| `/inventory` | `POST` | Create inventory item | Manager, Owner, Admin |
-| `/inventory` | `GET` | List items (low-stock filter) | Staff, Manager, Owner, Admin |
-| `/inventory/:id` | `GET` | Get inventory item | Staff, Manager, Owner, Admin |
-| `/inventory/:id/adjust` | `PATCH` | Adjust stock levels | Manager, Owner, Admin |
+### Endpoints
+
+#### [POST] `/inventory`
+Create a new inventory item.
+- **Auth Required:** Yes (Bearer Token)
+- **Roles Allowed:** `BRANCH_MANAGER`, `FRANCHISE_OWNER`, `SUPER_ADMIN`
+- **Request Body:** `CreateInventoryItemDto`.
+- **Response (201):** `{ "id": "uuid" }`.
+
+#### [GET] `/inventory`
+List items with filtering (e.g., low-stock).
+- **Auth Required:** Yes (Bearer Token)
+- **Roles Allowed:** `STAFF`, `BRANCH_MANAGER`, `FRANCHISE_OWNER`, `SUPER_ADMIN`
+- **Query Params:** `sku`, `isLowStock`, `limit`, `offset`.
+- **Response (200):** Array of inventory items.
+
+#### [GET] `/inventory/:id`
+Get inventory item by ID.
+- **Auth Required:** Yes (Bearer Token)
+- **Roles Allowed:** `STAFF`, `BRANCH_MANAGER`, `FRANCHISE_OWNER`, `SUPER_ADMIN`
+- **Response (200):** Inventory item object.
+
+#### [PATCH] `/inventory/:id/adjust`
+Adjust stock levels.
+- **Auth Required:** Yes (Bearer Token)
+- **Roles Allowed:** `BRANCH_MANAGER`, `FRANCHISE_OWNER`, `SUPER_ADMIN`
+- **Request Body:** `AdjustStockDto` (contains `quantity`, `reason`).
+- **Response (200):** Updated item.
 
 ---
 
@@ -57,24 +149,59 @@ Handles order placement and status updates.
 **Target Service Port:** 3004
 **Gateway Path:** `/orders`
 
-| Endpoint | Method | Description | Roles Allowed |
-| :--- | :--- | :--- | :--- |
-| `/orders` | `POST` | Create a new order | Staff, Manager, Owner, Admin |
-| `/orders` | `GET` | List orders (filters: status, dates) | Staff, Manager, Owner, Admin |
-| `/orders/:id` | `GET` | Get order details | Staff, Manager, Owner, Admin |
-| `/orders/:id/status` | `PATCH` | Update order status | Staff, Manager, Owner, Admin |
+### Endpoints
+
+#### [POST] `/orders`
+Create a new order.
+- **Auth Required:** Yes (Bearer Token)
+- **Roles Allowed:** `STAFF`, `BRANCH_MANAGER`, `FRANCHISE_OWNER`, `SUPER_ADMIN`
+- **Request Body:** `CreateOrderDto`.
+- **Response (201):** `{ "id": "uuid" }`.
+
+#### [GET] `/orders`
+List orders with filtering.
+- **Auth Required:** Yes (Bearer Token)
+- **Query Params:** `status`, `customerId`, `fromDate`, `toDate`, `limit`, `offset`.
+- **Response (200):** Array of orders.
+
+#### [GET] `/orders/:id`
+Get order details.
+- **Auth Required:** Yes (Bearer Token)
+- **Response (200):** Order object.
+
+#### [PATCH] `/orders/:id/status`
+Update order status (e.g., PENDING, COMPLETED, CANCELLED).
+- **Auth Required:** Yes (Bearer Token)
+- **Roles Allowed:** `STAFF`, `BRANCH_MANAGER`, `FRANCHISE_OWNER`, `SUPER_ADMIN`
+- **Request Body:** `UpdateOrderStatusDto`.
+- **Response (204):** No Content.
 
 ---
 
-## Internal Services (Event-Driven)
+## Internal Interactions (Event-Driven)
+
+### Kafka Topics (Domain Events)
+Microservices publish events to Kafka for asynchronous processing:
+- `order.placed`: Published by Order Service.
+- `inventory.stock.low`: Published by Inventory Service.
 
 ### Notification Service
-Consumes Kafka events to trigger external notifications (e.g., via BullMQ).
-- **Topics Subscribed:**
-    - `order.placed`: Triggers order confirmation notifications.
-    - `inventory.stock.low`: Triggers low-stock alerts.
+Consumes Kafka events and enqueues jobs:
+- **Topic Subscriptions:** `order.placed`, `inventory.stock.low`.
+- **Jobs (BullMQ):**
+    - `send-order-confirmation`: Triggered by `order.placed`.
+    - `send-low-stock-alert`: Triggered by `inventory.stock.low`.
 
 ### Reporting Service
-Background worker for generating complex reports.
-- **Queue:** `reports-queue` (BullMQ)
-- **Functions:** Asynchronous report generation for sales, inventory, and performance.
+Handles background report generation via queues:
+- **Queue:** `reports-queue` (BullMQ).
+- **Jobs:**
+    - `generate-daily-sales`: Generates PDF sales reports.
+    - `generate-inventory-status`: Generates PDF inventory status.
+
+---
+
+## Health Checks
+Each service provides a health check endpoint:
+- `GET /health` (Directly on service port)
+- Response: `{ "status": "ok", "service": "service-name", "timestamp": "ISO-string" }`
