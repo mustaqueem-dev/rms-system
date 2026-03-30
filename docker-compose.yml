@@ -181,6 +181,63 @@ services:
       menu-service:      { condition: service_started }
       inventory-service: { condition: service_started }
 
+  reporting-service:
+    build:
+      context: .
+      dockerfile: apps/reporting-service/Dockerfile
+    container_name: rms-reporting-service
+    restart: unless-stopped
+    ports:
+      - "3006:3006"
+    environment:
+      NODE_ENV:      development
+      PORT:          3006
+      REDIS_HOST:    redis
+      REDIS_PORT:    6379
+      LOG_LEVEL:     info
+    depends_on:
+      redis: { condition: service_healthy }
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: apps/notification-service/Dockerfile
+    container_name: rms-notification-service
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      NODE_ENV:      development
+      PORT:          3005
+      REDIS_HOST:    redis
+      REDIS_PORT:    6379
+      KAFKA_BROKERS: kafka:9092
+      LOG_LEVEL:     info
+    depends_on:
+      redis: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    container_name: rms-api-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV:              development
+      PORT:                  3000
+      AUTH_SERVICE_URL:      http://auth-service:3004
+      MENU_SERVICE_URL:      http://menu-service:3001
+      INVENTORY_SERVICE_URL: http://inventory-service:3002
+      ORDER_SERVICE_URL:     http://order-service:3003
+    depends_on:
+      - auth-service
+      - menu-service
+      - inventory-service
+      - order-service
+
 volumes:
   mongo_data:
   redis_data:

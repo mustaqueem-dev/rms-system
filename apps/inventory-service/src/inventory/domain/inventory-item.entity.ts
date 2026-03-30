@@ -53,7 +53,7 @@ export class InventoryItem extends BaseEntity<InventoryItemProps> {
   private constructor(props: InventoryItemProps, id?: string) { super(props, id); }
 
   static create(
-    props: Omit<InventoryItemProps, 'isActive' | 'createdAt' | 'updatedAt'>,
+    props: Omit<InventoryItemProps, 'isActive' | 'createdAt' | 'updatedAt' | 'updatedBy'>,
     id?:   string
   ): Result<InventoryItem, string> {
     const guard = Guard.againstNullOrUndefinedBulk([

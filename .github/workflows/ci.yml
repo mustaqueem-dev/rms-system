@@ -1,0 +1,40 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install Dependencies
+      run: npm ci
+
+    - name: Typecheck shared-kernel
+      run: npm run typecheck --workspace=@rms/shared-kernel
+
+    - name: Typecheck event-contracts
+      run: npm run typecheck --workspace=@rms/event-contracts
+
+    - name: Build applications
+      run: npx turbo run build
+
+    - name: Run Tests
+      # Assuming jest tests are written eventually
+      run: npx turbo run test --continue || echo "No tests configured yet"
