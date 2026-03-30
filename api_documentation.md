@@ -201,7 +201,14 @@ Handles background report generation via queues:
 
 ---
 
-## Health Checks
-Each service provides a health check endpoint:
-- `GET /health` (Directly on service port)
-- Response: `{ "status": "ok", "service": "service-name", "timestamp": "ISO-string" }`
+## Frontend Integration Best Practices
+
+For integrating these APIs into a Next.js/React frontend, follow these guidelines:
+
+1. **Centralized Client**: Use the pre-configured Axios instance in `src/lib/api.ts`. It handles JWT injection and multi-tenancy headers automatically.
+2. **Service Layer**: Organize API calls into service modules (e.g., `src/services/menu.service.ts`).
+3. **Data Fetching**: Use **React Query** for all `GET` requests to handle caching, loading states, and error handling.
+4. **Type Safety**: Define TypeScript interfaces for all DTOs and Response objects to ensure frontend-backend consistency.
+5. **Environment Variables**: Use `NEXT_PUBLIC_API_URL` to point to the Gateway.
+
+For more details, see the [Frontend Integration Guide](file:///home/sweet-heart/.gemini/antigravity/brain/bbd1ad01-f138-44af-b4ff-d8372d64c05a/frontend_integration.md).
