@@ -1,6 +1,6 @@
 // packages/shared-kernel/src/core/value-object.ts
 
-export abstract class ValueObject<T extends Record<string, unknown>> {
+export abstract class ValueObject<T extends object> {
   protected readonly props: T;
 
   protected constructor(props: T) {

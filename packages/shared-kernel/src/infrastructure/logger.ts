@@ -1,7 +1,7 @@
 // packages/shared-kernel/src/infrastructure/logger.ts
 
 export interface LogContext {
-  service:      string;
+  service?:     string;
   traceId?:     string;
   userId?:      string;
   branchId?:    string;

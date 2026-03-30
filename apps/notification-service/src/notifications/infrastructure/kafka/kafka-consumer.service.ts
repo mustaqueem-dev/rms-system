@@ -28,6 +28,23 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
     await this.consumer.connect();
     this.logger.info('Connected to Kafka');
 
+    // Ensure topics exist before subscribing
+    const admin = this.kafka.admin();
+    await admin.connect();
+    try {
+      await admin.createTopics({
+        topics: [
+          { topic: 'order.placed' },
+          { topic: 'inventory.stock.low' }
+        ]
+      });
+      this.logger.info('Created required Kafka topics');
+    } catch (error) {
+       this.logger.info('Topics likely already exist', { error });
+    } finally {
+      await admin.disconnect();
+    }
+
     // Subscribe to domain events we care about
     await this.consumer.subscribe({ topic: 'order.placed', fromBeginning: false });
     await this.consumer.subscribe({ topic: 'inventory.stock.low', fromBeginning: false });

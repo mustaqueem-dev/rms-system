@@ -1,11 +1,11 @@
-// package.json  (workspace root)
 {
   "name": "rms-backend",
   "private": true,
+  "packageManager": "npm@10.2.4",
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
     "build":   "turbo run build",
-    "dev":     "turbo run dev --parallel",
+    "dev":     "turbo run dev",
     "test":    "turbo run test",
     "lint":    "turbo run lint",
     "typecheck": "turbo run typecheck"
