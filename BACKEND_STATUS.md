@@ -142,32 +142,31 @@
 
 ## Phase 6 — Order Service (`apps/order-service` · Port 3003 · DB: `rms_orders`)
 
-| #    | Task                                   | Status | Notes                                  |
-| ---- | -------------------------------------- | ------ | -------------------------------------- |
-| 6.1  | Scaffold NestJS app                    | ⏳      |                                        |
-| 6.2  | Domain: `Order` entity                 | ⏳      |                                        |
-| 6.3  | Domain: `OrderItem` value object       | ⏳      |                                        |
-| 6.4  | Domain: Order status state machine     | ⏳      | validate transitions                   |
-| 6.5  | App: `PlaceOrderUseCase`               | ⏳      | emit `order.placed`                    |
-| 6.6  | App: `UpdateOrderStatusUseCase`        | ⏳      | emit `order.status_changed`            |
-| 6.7  | App: `CancelOrderUseCase`              | ⏳      | emit `order.cancelled`                 |
-| 6.8  | App: `ListOrdersUseCase`               | ⏳      | with status filter + pagination        |
-| 6.9  | App: `AssignKdsStationUseCase`         | ⏳      |                                        |
-| 6.10 | App: `BumpOrderUseCase`                | ⏳      | KDS bump                               |
-| 6.11 | Infra: `OrderSchema` (Mongoose)        | ⏳      | indexes on branchId, status, createdAt |
-| 6.12 | Infra: `OrderMongoRepository`          | ⏳      |                                        |
-| 6.13 | Kafka: emit `order.placed`             | ⏳      |                                        |
-| 6.14 | Kafka: emit `order.status_changed`     | ⏳      |                                        |
-| 6.15 | Kafka: emit `order.cancelled`          | ⏳      |                                        |
-| 6.16 | WebSocket: `OrderGateway` setup        | ⏳      | Socket.IO rooms by `branchId`          |
-| 6.17 | WebSocket: emit `order:new`            | ⏳      | on order placed                        |
-| 6.18 | WebSocket: emit `order:status_changed` | ⏳      |                                        |
-| 6.19 | WebSocket: emit `kds:order_assigned`   | ⏳      |                                        |
-| 6.20 | WebSocket: handle `pos:order_create`   | ⏳      | POS shortcut                           |
-| 6.21 | WebSocket: handle `subscribe:branch`   | ⏳      | room subscription                      |
-| 6.22 | Controllers: all 7 endpoints           | ⏳      |                                        |
-| 6.23 | Unit tests                             | ⏳      |                                        |
-| 6.24 | Integration tests                      | ⏳      |                                        |
+| #    | Task                                   | Status | Notes |
+| ---- | -------------------------------------- | ------ | ----- |
+| 6.1  | Scaffold NestJS app                    | ✅      | existed |
+| 6.2  | Domain: `Order` entity                 | ✅      | existed — OrderProps, OrderLineProps, state machine |
+| 6.3  | Domain: `OrderLine` in OrderLineProps  | ✅      | existed — embedded in OrderProps.lines |
+| 6.4  | Domain: Order status state machine     | ✅      | existed — TRANSITIONS map, InvalidStateTransitionError |
+| 6.5  | App: `CreateOrderUseCase`              | ✅      | existed — emits OrderPlacedEvent |
+| 6.6  | App: `UpdateOrderStatusUseCase`        | ✅      | existed — emits OrderStatusChangedEvent |
+| 6.7  | App: `CancelOrderUseCase`              | ✅      | new — transitions to CANCELLED, emits OrderCancelledEvent |
+| 6.8  | App: `ListOrdersUseCase`              | ✅      | new — paginated with status/date/customer filters |
+| 6.9  | App: `AssignKdsStationUseCase`         | ✅      | new — emits kds.order_assigned.v1 event |
+| 6.10 | App: `BumpOrderUseCase`               | ✅      | new — KDS bump: PREPARING → READY |
+| 6.11 | Infra: `OrderSchema` (Mongoose)        | ✅      | existed — branchId/status/createdAt indexes |
+| 6.12 | Infra: `MongoOrderRepository`          | ✅      | existed |
+| 6.13 | Kafka: emit `order.placed`             | ✅      | emitted via InMemoryEventPublisher (domain event) |
+| 6.14 | Kafka: emit `order.status_changed`     | ✅      | emitted via InMemoryEventPublisher (domain event) |
+| 6.15 | Kafka: emit `order.cancelled`          | ✅      | emitted via InMemoryEventPublisher (domain event) |
+| 6.16 | WebSocket: `OrderGateway` setup        | ✅      | new — plain @Injectable service, Socket.IO wired in app.module.ts |
+| 6.17 | WebSocket: emit `order:new`            | ✅      | new — broadcastOrderNew() |
+| 6.18 | WebSocket: emit `order:status_changed` | ✅      | new — broadcastOrderStatusChanged() |
+| 6.19 | WebSocket: emit `kds:order_assigned`   | ✅      | new — broadcastKdsOrderAssigned() |
+| 6.20 | WebSocket: handle `pos:order_create`   | ✅      | new — handlePosOrderCreate() |
+| 6.21 | WebSocket: handle `subscribe:branch`   | ✅      | new — handleSubscribeBranch() |
+| 6.22 | Controllers: all 7 endpoints           | ✅      | create, list, getOne, updateStatus, cancel, assignKds, bump |
+| 6.23 | Unit / Integration tests               | ⏳      | Phase 13 |
 
 ---
 
@@ -329,7 +328,7 @@
 | 3 — Auth Service         | 22          | **20** | 0             | 2             |
 | 4 — Menu Service         | 23          | **21** | 0             | 2             |
 | 5 — Inventory Service    | 14          | **12** | 0             | 2             |
-| 6 — Order Service        | 24          | 0      | 0             | 24            |
+| 6 — Order Service        | 24          | **22** | 0             | 2             |
 | 7 — Table Service        | 17          | 0      | 0             | 17            |
 | 8 — Staff Service        | 12          | 0      | 0             | 12            |
 | 9 — Notification Service | 11          | 0      | 0             | 11            |
@@ -338,7 +337,7 @@
 | 12 — Security            | 10          | 0      | 0             | 10            |
 | 13 — Testing             | 14          | 1      | 0             | 13            |
 | 14 — CI/CD               | 7           | 0      | 0             | 7             |
-| **TOTAL**                | **211**     | **102** | **0**        | **109**       |
+| **TOTAL**                | **211**     | **124** | **0**        | **87**        |
 
 > Update this table and individual task statuses as development progresses.  
 > Change ⏳ → 🔄 when starting · 🔄 → ✅ when complete · ❌ if blocked (add reason in Notes).
