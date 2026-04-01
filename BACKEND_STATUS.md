@@ -231,18 +231,18 @@
 
 ## Phase 10 — Reporting Service (`apps/reporting-service` · Port 3006 · DB: None)
 
-| #     | Task                                      | Status | Notes                       |
-| ----- | ----------------------------------------- | ------ | --------------------------- |
-| 10.1  | Scaffold NestJS app                       | ⏳      |                             |
-| 10.2  | BullMQ: `reports-queue` setup             | ⏳      |                             |
-| 10.3  | Worker: `ReportsWorker`                   | ⏳      |                             |
-| 10.4  | Job: `generate-daily-sales`               | ⏳      | PDF via pdfkit/puppeteer    |
-| 10.5  | Job: `generate-inventory-status`          | ⏳      | PDF                         |
-| 10.6  | Cron: schedule daily sales at 23:59       | ⏳      | `@nestjs/schedule`          |
-| 10.7  | PDF file storage (S3 or local `uploads/`) | ⏳      |                             |
-| 10.8  | Analytics aggregation pipeline            | ⏳      | MongoDB `$group`, `$lookup` |
-| 10.9  | Controllers: 5 report endpoints           | ⏳      |                             |
-| 10.10 | Unit tests                                | ⏳      |                             |
+| #     | Task                                      | Status | Notes |
+| ----- | ----------------------------------------- | ------ | ----- |
+| 10.1  | Scaffold NestJS app                       | ✅      | existed |
+| 10.2  | BullMQ: `reports-queue` setup             | ✅      | existed |
+| 10.3  | Worker: `ReportWorker`                    | ✅      | upgraded — real PDF generation with typed job payloads |
+| 10.4  | Job: `generate-daily-sales`               | ✅      | new — AnalyticsService.getDailySales() + PdfService |
+| 10.5  | Job: `generate-inventory-status`          | ✅      | new — AnalyticsService.getInventoryStatus() + PdfService |
+| 10.6  | Cron: daily-sales at 23:59 + inventory at 06:00 | ✅ | new — `ReportCronService` @Cron Asia/Kolkata timezone |
+| 10.7  | PDF file storage (local `uploads/reports/`) | ✅    | new — configurable via REPORTS_UPLOAD_DIR env |
+| 10.8  | Analytics: 3 aggregation pipelines        | ✅      | new — daily sales, inventory status, monthly revenue roll-up |
+| 10.9  | Controllers: 7 report endpoints           | ✅      | new — JSON + PDF download + manual trigger endpoints |
+| 10.10 | Unit tests                                | ⏳      | Phase 13 |
 
 ---
 
@@ -330,12 +330,12 @@
 | 7 — Table Service        | 17          | **15** | 0             | 2             |
 | 8 — Staff Service        | 12          | **10** | 0             | 2             |
 | 9 — Notification Service | 11          | **9**  | 0             | 2             |
-| 10 — Reporting Service   | 10          | 0      | 0             | 10            |
+| 10 — Reporting Service   | 10          | **9**  | 0             | 1             |
 | 11 — API Gateway         | 12          | 0      | 0             | 12            |
 | 12 — Security            | 10          | 0      | 0             | 10            |
 | 13 — Testing             | 14          | 1      | 0             | 13            |
 | 14 — CI/CD               | 7           | 0      | 0             | 7             |
-| **TOTAL**                | **211**     | **158** | **0**        | **53**        |
+| **TOTAL**                | **211**     | **167** | **0**        | **44**        |
 
 > Update this table and individual task statuses as development progresses.  
 > Change ⏳ → 🔄 when starting · 🔄 → ✅ when complete · ❌ if blocked (add reason in Notes).
