@@ -60,6 +60,7 @@ export { ConsoleLogger }               from './infrastructure/logger';
 export { EVENT_PUBLISHER }             from './infrastructure/event-publisher.interface';
 export type { IEventPublisher }        from './infrastructure/event-publisher.interface';
 export { InMemoryEventPublisher }      from './infrastructure/in-memory-event-publisher';
+export { KafkaEventPublisher }         from './infrastructure/kafka-publisher';
 
 // ─── Infrastructure — Auth / RBAC ────────────────────────────────────────────
 export {
@@ -77,3 +78,21 @@ export { CurrentTenant, CurrentUserId } from './infrastructure/tenant-context';
 
 // ─── Infrastructure — Redis cache ────────────────────────────────────────────
 export { RedisCache }                  from './infrastructure/redis-cache';
+
+// ─── Infrastructure — Circuit breaker ────────────────────────────────────────
+export { CircuitBreaker }              from './infrastructure/circuit-breaker';
+export type { CircuitBreakerOptions }  from './infrastructure/circuit-breaker';
+
+// ─── Interceptors ────────────────────────────────────────────────────────────
+export { LoggingInterceptor }          from './interceptors/logging.interceptor';
+export { TraceInterceptor }            from './interceptors/trace.interceptor';
+
+// ─── Pipes ───────────────────────────────────────────────────────────────────
+export { GlobalValidationPipe }        from './pipes/validation.pipe';
+
+// ─── Response envelope ────────────────────────────────────────────────────────
+export type { ApiResponse, ApiError, ApiMeta } from './response/envelope';
+export { ok, okPaginated, created, noContent, fail } from './response/envelope';
+
+// ─── Filters ─────────────────────────────────────────────────────────────────
+export { AllExceptionsFilter }         from './filters/all-exceptions.filter';

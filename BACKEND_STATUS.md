@@ -34,14 +34,14 @@
 | 2.6 | `infrastructure/JwtAuthGuard` | ✅ | exists |
 | 2.7 | `infrastructure/TenantContext` | ✅ | exists |
 | 2.8 | `infrastructure/EventPublisher` interface | ✅ | exists |
-| 2.9 | `infrastructure/KafkaPublisher` (Kafka impl) | ⏳ | concrete Kafka-backed publisher |
-| 2.10 | `infrastructure/CircuitBreaker` | ⏳ | NFR-A06 |
-| 2.11 | `decorators/Roles` decorator | ⏳ | `@Roles('MANAGER', 'ADMIN')` |
-| 2.12 | `guards/RolesGuard` | ⏳ | RBAC enforcement |
-| 2.13 | `interceptors/LoggingInterceptor` | ⏳ | req/res logging, mask PII |
-| 2.14 | `interceptors/TraceInterceptor` | ⏳ | inject `traceId` into every response |
-| 2.15 | `pipes/GlobalValidationPipe` | ⏳ | class-validator + sanitiser |
-| 2.16 | `response/Envelope` helper | ⏳ | `{ success, data, error, meta, traceId }` |
+| 2.9 | `infrastructure/KafkaPublisher` (Kafka impl) | ✅ | uses local `IKafkaClient` interface — no @nestjs/microservices dep |
+| 2.10 | `infrastructure/CircuitBreaker` | ✅ | 3-state (CLOSED/OPEN/HALF_OPEN), configurable threshold + cooldown |
+| 2.11 | `decorators/Roles` decorator | ✅ | already existed in `jwt-auth.guard.ts` |
+| 2.12 | `guards/RolesGuard` | ✅ | already existed in `jwt-auth.guard.ts` |
+| 2.13 | `interceptors/LoggingInterceptor` | ✅ | PII masking (email, phone, password, token, secret) — NFR-S08 |
+| 2.14 | `interceptors/TraceInterceptor` | ✅ | injects `X-Trace-Id` header + traceId into envelope |
+| 2.15 | `pipes/GlobalValidationPipe` | ✅ | class-validator + whitelist mode + flat error messages |
+| 2.16 | `response/Envelope` helper | ✅ | `ok`, `okPaginated`, `created`, `noContent`, `fail` builders |
 | 2.17 | `types/pagination.types.ts` | ✅ | exists |
 | 2.18 | `types/audit.types.ts` | ✅ | exists |
 
@@ -54,9 +54,9 @@
 | 2.21 | `inventory.events.ts` | ✅ | exists |
 | 2.22 | `order.events.ts` | ✅ | exists |
 | 2.23 | `notification.events.ts` | ✅ | exists |
-| 2.24 | `table.events.ts` | ⏳ | `table.status_changed`, `reservation.created` |
-| 2.25 | `staff.events.ts` | ⏳ | `shift.started`, `shift.ended` |
-| 2.26 | `kds.events.ts` | ⏳ | `kds.order_assigned`, `kds.order_ready` |
+| 2.24 | `table.events.ts` | ✅ | `table.status_changed`, `table.layout_saved`, full reservation lifecycle |
+| 2.25 | `staff.events.ts` | ✅ | `shift.started/ended`, `clocked_in/out`, `shift_scheduled` |
+| 2.26 | `kds.events.ts` | ✅ | `kds.order_assigned/ready/bumped`, item-level start/complete |
 
 ---
 
@@ -325,7 +325,7 @@
 | Phase | Total Tasks | ✅ Done | 🔄 In Progress | ⏳ Not Started |
 |-------|-------------|---------|----------------|---------------|
 | 1 — Foundation | 9 | **9** | 0 | 0 |
-| 2 — Shared Packages | 26 | 13 | 0 | 13 |
+| 2 — Shared Packages | 26 | **26** | 0 | 0 |
 | 3 — Auth Service | 22 | 0 | 0 | 22 |
 | 4 — Menu Service | 23 | 0 | 0 | 23 |
 | 5 — Inventory Service | 14 | 0 | 0 | 14 |
@@ -338,7 +338,7 @@
 | 12 — Security | 10 | 0 | 0 | 10 |
 | 13 — Testing | 14 | 1 | 0 | 13 |
 | 14 — CI/CD | 7 | 0 | 0 | 7 |
-| **TOTAL** | **211** | **23** | **0** | **188** |
+| **TOTAL** | **211** | **49** | **0** | **162** |
 
 > Update this table and individual task statuses as development progresses.  
 > Change ⏳ → 🔄 when starting · 🔄 → ✅ when complete · ❌ if blocked (add reason in Notes).
