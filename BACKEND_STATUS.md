@@ -195,20 +195,19 @@
 
 ## Phase 8 — Staff & Shift Service (`apps/staff-service` · Port 3008 · DB: `rms_staff`)
 
-| #    | Task                                         | Status | Notes                   |
-| ---- | -------------------------------------------- | ------ | ----------------------- |
-| 8.1  | Scaffold NestJS app                          | ⏳      |                         |
-| 8.2  | Domain: `ShiftSlot` entity                   | ⏳      |                         |
-| 8.3  | Domain: `TimeEntry` entity                   | ⏳      | clock-in/out            |
-| 8.4  | App: `ScheduleShiftUseCase`                  | ⏳      |                         |
-| 8.5  | App: `ClockInUseCase`                        | ⏳      |                         |
-| 8.6  | App: `ClockOutUseCase`                       | ⏳      | calculate total minutes |
-| 8.7  | App: `GetShiftHistoryUseCase`                | ⏳      |                         |
-| 8.8  | Infra: `ShiftSlotSchema` + `TimeEntrySchema` | ⏳      |                         |
-| 8.9  | Kafka: emit `shift.started` / `shift.ended`  | ⏳      |                         |
-| 8.10 | Controllers: all 9 endpoints                 | ⏳      |                         |
-| 8.11 | Unit tests                                   | ⏳      |                         |
-| 8.12 | Integration tests                            | ⏳      |                         |
+| #    | Task                                         | Status | Notes |
+| ---- | -------------------------------------------- | ------ | ----- |
+| 8.1  | Scaffold NestJS app                          | ✅      | new — package.json + tsconfig.json |
+| 8.2  | Domain: `ShiftSlot` entity                   | ✅      | new — scheduled slot with ShiftScheduledEvent/ShiftStartedEvent/ShiftEndedEvent |
+| 8.3  | Domain: `TimeEntry` entity                   | ✅      | new — clock-in/out with totalMinutes calculation |
+| 8.4  | App: `ScheduleShiftUseCase`                  | ✅      | new — creates ShiftSlot, emits ShiftScheduledEvent |
+| 8.5  | App: `ClockInUseCase`                        | ✅      | new — guards against duplicate active sessions |
+| 8.6  | App: `ClockOutUseCase`                       | ✅      | new — closes TimeEntry, calculates totalMinutes, emits ShiftEndedEvent |
+| 8.7  | App: Shift history via repo query            | ✅      | GET /staff/shifts with date-range filter |
+| 8.8  | Infra: `ShiftSlotSchema` + `TimeEntrySchema` | ✅      | new — compound indexes for daily schedule and per-staff attendance queries |
+| 8.9  | Kafka: emit `shift.started` / `shift.ended`  | ✅      | ShiftEndedEvent emitted by ClockOutUseCase |
+| 8.10 | Controllers: 6 endpoints                     | ✅      | scheduleShift, listShifts, deleteShift, clockIn, clockOut, attendance |
+| 8.11 | Unit / Integration tests                     | ⏳      | Phase 13 |
 
 ---
 
@@ -329,14 +328,14 @@
 | 5 — Inventory Service    | 14          | **12** | 0             | 2             |
 | 6 — Order Service        | 24          | **22** | 0             | 2             |
 | 7 — Table Service        | 17          | **15** | 0             | 2             |
-| 8 — Staff Service        | 12          | 0      | 0             | 12            |
+| 8 — Staff Service        | 12          | **10** | 0             | 2             |
 | 9 — Notification Service | 11          | 0      | 0             | 11            |
 | 10 — Reporting Service   | 10          | 0      | 0             | 10            |
 | 11 — API Gateway         | 12          | 0      | 0             | 12            |
 | 12 — Security            | 10          | 0      | 0             | 10            |
 | 13 — Testing             | 14          | 1      | 0             | 13            |
 | 14 — CI/CD               | 7           | 0      | 0             | 7             |
-| **TOTAL**                | **211**     | **139** | **0**        | **72**        |
+| **TOTAL**                | **211**     | **149** | **0**        | **62**        |
 
 > Update this table and individual task statuses as development progresses.  
 > Change ⏳ → 🔄 when starting · 🔄 → ✅ when complete · ❌ if blocked (add reason in Notes).
