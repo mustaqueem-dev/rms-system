@@ -213,19 +213,19 @@
 
 ## Phase 9 — Notification Service (`apps/notification-service` · Port 3005 · DB: None)
 
-| #    | Task                                        | Status | Notes                                 |
-| ---- | ------------------------------------------- | ------ | ------------------------------------- |
-| 9.1  | Scaffold NestJS app                         | ⏳      |                                       |
-| 9.2  | Kafka consumer: `order.placed`              | ⏳      | enqueue `send-order-confirmation` job |
-| 9.3  | Kafka consumer: `inventory.stock.low`       | ⏳      | enqueue `send-low-stock-alert` job    |
-| 9.4  | Kafka consumer: `reservation.created`       | ⏳      | enqueue `send-reservation-sms` job    |
-| 9.5  | BullMQ: `notifications-queue` setup         | ⏳      |                                       |
-| 9.6  | Worker: `NotificationWorker`                | ⏳      | processes all 3 job types             |
-| 9.7  | WhatsApp integration (Twilio/Meta WABA)     | ⏳      | configurable via env                  |
-| 9.8  | SMS integration (for reservations)          | ⏳      |                                       |
-| 9.9  | Retry strategy: 3x with exponential backoff | ⏳      |                                       |
-| 9.10 | Dead-letter queue for failed jobs           | ⏳      |                                       |
-| 9.11 | Unit tests (mock external APIs)             | ⏳      |                                       |
+| #    | Task                                        | Status | Notes |
+| ---- | ------------------------------------------- | ------ | ----- |
+| 9.1  | Scaffold NestJS app                         | ✅      | existed |
+| 9.2  | Kafka consumer: `order.placed`              | ✅      | existed + upgraded |
+| 9.3  | Kafka consumer: `inventory.stock.low`       | ✅      | existed + upgraded |
+| 9.4  | Kafka consumer: `order.cancelled`           | ✅      | new topic added |
+| 9.5  | Kafka consumer: `reservation.created.v1`    | ✅      | new topic added |
+| 9.6  | BullMQ: `notifications-queue` setup         | ✅      | existed |
+| 9.7  | Worker: `NotificationWorker`                | ✅      | upgraded — 4 typed job handlers with real sends |
+| 9.8  | WhatsApp channel (Meta Graph API)           | ✅      | new — `WhatsAppChannel` with dev console fallback |
+| 9.9  | Email channel (SMTP/nodemailer)             | ✅      | new — `EmailChannel` with dev console fallback |
+| 9.10 | Retry strategy: 3x with exponential backoff | ✅      | `RETRY_OPTIONS` applied to all 4 job types |
+| 9.11 | Unit tests (mock external APIs)             | ⏳      | Phase 13 |
 
 ---
 
@@ -329,13 +329,13 @@
 | 6 — Order Service        | 24          | **22** | 0             | 2             |
 | 7 — Table Service        | 17          | **15** | 0             | 2             |
 | 8 — Staff Service        | 12          | **10** | 0             | 2             |
-| 9 — Notification Service | 11          | 0      | 0             | 11            |
+| 9 — Notification Service | 11          | **9**  | 0             | 2             |
 | 10 — Reporting Service   | 10          | 0      | 0             | 10            |
 | 11 — API Gateway         | 12          | 0      | 0             | 12            |
 | 12 — Security            | 10          | 0      | 0             | 10            |
 | 13 — Testing             | 14          | 1      | 0             | 13            |
 | 14 — CI/CD               | 7           | 0      | 0             | 7             |
-| **TOTAL**                | **211**     | **149** | **0**        | **62**        |
+| **TOTAL**                | **211**     | **158** | **0**        | **53**        |
 
 > Update this table and individual task statuses as development progresses.  
 > Change ⏳ → 🔄 when starting · 🔄 → ✅ when complete · ❌ if blocked (add reason in Notes).

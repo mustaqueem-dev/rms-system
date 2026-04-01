@@ -2,29 +2,35 @@
   "name": "rms-backend",
   "private": true,
   "packageManager": "npm@10.2.4",
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "build":        "turbo run build",
-    "dev":          "turbo run dev",
-    "test":         "turbo run test",
-    "test:e2e":     "turbo run test:e2e",
-    "lint":         "turbo run lint",
-    "format":       "prettier --write \"**/*.{ts,js,json,md}\" --ignore-path .gitignore",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\" --ignore-path .gitignore",
     "format:check": "prettier --check \"**/*.{ts,js,json,md}\" --ignore-path .gitignore",
-    "typecheck":    "turbo run typecheck",
-    "clean":        "turbo run clean"
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean"
   },
   "devDependencies": {
-    "turbo": "^2.0.0",
-    "typescript": "^5.4.0",
-    "eslint": "^8.57.0",
+    "@types/jest": "^29.5.12",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
+    "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
-    "prettier": "^3.2.5",
     "jest": "^29.7.0",
-    "@types/jest": "^29.5.12",
-    "ts-jest": "^29.1.2"
+    "prettier": "^3.2.5",
+    "ts-jest": "^29.1.2",
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@nestjs/schedule": "^6.1.1"
   }
 }

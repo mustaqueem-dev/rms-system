@@ -1,4 +1,7 @@
 // apps/notification-service/src/notifications/infrastructure/kafka/kafka-consumer.service.ts
+//
+// Kafka consumer — subscribes to domain events and enqueues BullMQ jobs
+// for the NotificationWorker to dispatch via WhatsApp / Email channels.
 
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService }     from '@nestjs/config';
@@ -6,6 +9,15 @@ import { InjectQueue }       from '@nestjs/bullmq';
 import { Queue }             from 'bullmq';
 import { Kafka, Consumer }   from 'kafkajs';
 import { ConsoleLogger }     from '@rms/shared-kernel';
+
+const RETRY_OPTIONS = { attempts: 3, backoff: { type: 'exponential', delay: 2000 } } as const;
+
+const TOPICS = [
+  'order.placed',
+  'order.cancelled',
+  'inventory.stock.low',
+  'reservation.created.v1',
+] as const;
 
 @Injectable()
 export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
@@ -15,7 +27,7 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private config: ConfigService,
-    @InjectQueue('notifications-queue') private notificationQueue: Queue
+    @InjectQueue('notifications-queue') private notificationQueue: Queue,
   ) {
     this.kafka = new Kafka({
       clientId: 'notification-service',
@@ -24,60 +36,105 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
     this.consumer = this.kafka.consumer({ groupId: 'notification-group' });
   }
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
     await this.consumer.connect();
     this.logger.info('Connected to Kafka');
 
-    // Ensure topics exist before subscribing
+    // Ensure topics exist (no-op if already present)
     const admin = this.kafka.admin();
     await admin.connect();
     try {
-      await admin.createTopics({
-        topics: [
-          { topic: 'order.placed' },
-          { topic: 'inventory.stock.low' }
-        ]
-      });
-      this.logger.info('Created required Kafka topics');
-    } catch (error) {
-       this.logger.info('Topics likely already exist', { error });
+      await admin.createTopics({ topics: TOPICS.map((topic) => ({ topic })) });
+      this.logger.info('Kafka topics ready');
+    } catch {
+      this.logger.info('Topics likely already exist');
     } finally {
       await admin.disconnect();
     }
 
-    // Subscribe to domain events we care about
-    await this.consumer.subscribe({ topic: 'order.placed', fromBeginning: false });
-    await this.consumer.subscribe({ topic: 'inventory.stock.low', fromBeginning: false });
+    for (const topic of TOPICS) {
+      await this.consumer.subscribe({ topic, fromBeginning: false });
+    }
 
     await this.consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
+      eachMessage: async ({ topic, message }) => {
         if (!message.value) return;
-        const eventData = JSON.parse(message.value.toString());
-
-        this.logger.info(`Received event`, { topic, eventId: eventData.eventId });
-
-        if (topic === 'order.placed') {
-          // Enqueue job for background processing + retries
-          await this.notificationQueue.add('send-order-confirmation', {
-            orderId:     eventData.aggregateId,
-            branchId:    eventData.branchId,
-            totalAmount: eventData.totalAmount,
-          }, { attempts: 3, backoff: { type: 'exponential', delay: 2000 } });
-        }
-
-        if (topic === 'inventory.stock.low') {
-          await this.notificationQueue.add('send-low-stock-alert', {
-            itemId:       eventData.aggregateId,
-            branchId:     eventData.branchId,
-            currentQty:   eventData.currentQty,
-            reorderLevel: eventData.reorderLevel,
-          });
-        }
+        const ev = JSON.parse(message.value.toString());
+        this.logger.info(`Received event`, { topic, eventId: ev.eventId });
+        await this.dispatch(topic, ev);
       },
     });
   }
 
-  async onModuleDestroy() {
+  async onModuleDestroy(): Promise<void> {
     await this.consumer.disconnect();
+  }
+
+  // ── Job dispatch ────────────────────────────────────────────────────────────
+
+  private async dispatch(topic: string, ev: Record<string, unknown>): Promise<void> {
+    switch (topic) {
+      case 'order.placed':
+        await this.notificationQueue.add(
+          'send-order-confirmation',
+          {
+            orderId:     ev['aggregateId'],
+            branchId:    ev['branchId'],
+            totalAmount: ev['totalAmount'],
+            customerPhone: ev['customerPhone'],
+            customerEmail: ev['customerEmail'],
+          },
+          RETRY_OPTIONS,
+        );
+        break;
+
+      case 'order.cancelled':
+        await this.notificationQueue.add(
+          'send-order-cancelled',
+          {
+            orderId:       ev['aggregateId'],
+            branchId:      ev['branchId'],
+            reason:        ev['reason'] ?? 'No reason provided',
+            customerPhone: ev['customerPhone'],
+            customerEmail: ev['customerEmail'],
+          },
+          RETRY_OPTIONS,
+        );
+        break;
+
+      case 'inventory.stock.low':
+        await this.notificationQueue.add(
+          'send-low-stock-alert',
+          {
+            itemId:        ev['aggregateId'],
+            itemName:      ev['itemName'],
+            branchId:      ev['branchId'],
+            currentQty:    ev['currentQty'],
+            reorderLevel:  ev['reorderLevel'],
+            managerPhone:  ev['managerPhone'],
+            managerEmail:  ev['managerEmail'],
+          },
+          RETRY_OPTIONS,
+        );
+        break;
+
+      case 'reservation.created.v1':
+        await this.notificationQueue.add(
+          'send-reservation-confirmation',
+          {
+            reservationId: ev['aggregateId'],
+            branchId:      ev['branchId'],
+            guestName:     ev['guestName'],
+            guestPhone:    ev['guestPhone'],
+            tableNumber:   ev['tableNumber'],
+            scheduledAt:   ev['scheduledAt'],
+          },
+          RETRY_OPTIONS,
+        );
+        break;
+
+      default:
+        this.logger.warn(`Unhandled topic: ${topic}`);
+    }
   }
 }
