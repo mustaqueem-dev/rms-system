@@ -121,22 +121,22 @@
 
 ## Phase 5 — Inventory Service (`apps/inventory-service` · Port 3002 · DB: `rms_inventory`)
 
-| #    | Task                                               | Status | Notes                                  |
-| ---- | -------------------------------------------------- | ------ | -------------------------------------- |
-| 5.1  | Scaffold NestJS app                                | ⏳      |                                        |
-| 5.2  | Domain: `StockItem` entity                         | ⏳      |                                        |
-| 5.3  | Domain: `StockAdjustment` entity                   | ⏳      | audit trail                            |
-| 5.4  | App: `CreateStockItemUseCase`                      | ⏳      |                                        |
-| 5.5  | App: `AdjustStockUseCase`                          | ⏳      | MANUAL_IN / MANUAL_OUT                 |
-| 5.6  | App: `DeductStockUseCase`                          | ⏳      | triggered by Kafka `order.placed`      |
-| 5.7  | App: `ListLowStockUseCase`                         | ⏳      | `qty <= reorderLevel` filter           |
-| 5.8  | Infra: `StockItemSchema` + `StockAdjustmentSchema` | ⏳      |                                        |
-| 5.9  | Infra: `StockItemMongoRepository`                  | ⏳      |                                        |
-| 5.10 | Kafka: consume `order.placed` → deduct stock       | ⏳      | consumer group `inventory-service`     |
-| 5.11 | Kafka: emit `inventory.stock.low`                  | ⏳      | after deduction if below reorder level |
-| 5.12 | Controllers: all 7 endpoints                       | ⏳      |                                        |
-| 5.13 | Unit tests                                         | ⏳      |                                        |
-| 5.14 | Integration tests                                  | ⏳      |                                        |
+| #    | Task                                               | Status | Notes |
+| ---- | -------------------------------------------------- | ------ | ----- |
+| 5.1  | Scaffold NestJS app                                | ✅      | existed |
+| 5.2  | Domain: `InventoryItem` entity                     | ✅      | existed — adjustStock, LowStockAlertEvent, StockDepletedEvent |
+| 5.3  | Domain: `StockAdjustment` entity                   | ✅      | new — immutable audit trail (MANUAL_IN/OUT, ORDER_DEDUCTION, WASTE, etc.) |
+| 5.4  | App: `CreateInventoryItemUseCase`                  | ✅      | existed |
+| 5.5  | App: `AdjustStockUseCase`                          | ✅      | existed |
+| 5.6  | App: `DeductStockUseCase`                          | ✅      | new — Kafka-triggered, batch with per-item failure collection |
+| 5.7  | App: `ListLowStockUseCase`                         | ✅      | new — qty ≤ reorderLevel filter |
+| 5.8  | App: `UpdateReorderRuleUseCase`                    | ✅      | new — PATCH /inventory/:id/reorder-rule |
+| 5.9  | Infra: `InventoryItemSchema` + repo                | ✅      | existed |
+| 5.10 | Infra: `StockAdjustmentSchema` + repo              | ✅      | new — compound indexes for audit trail queries |
+| 5.11 | Kafka: consume `order.placed` → deduct stock       | ✅      | new — `OrderPlacedConsumer` with manual offset commit |
+| 5.12 | Kafka: emit `inventory.stock.low`                  | ✅      | LowStockAlertEvent emitted by adjustStock() domain behaviour |
+| 5.13 | Controllers: all 7 endpoints                       | ✅      | create, list, low-stock, getOne, adjust, reorder-rule |
+| 5.14 | Unit / Integration tests                           | ⏳      | Phase 13 |
 
 ---
 
@@ -328,7 +328,7 @@
 | 2 — Shared Packages      | 26          | **26** | 0             | 0             |
 | 3 — Auth Service         | 22          | **20** | 0             | 2             |
 | 4 — Menu Service         | 23          | **21** | 0             | 2             |
-| 5 — Inventory Service    | 14          | 0      | 0             | 14            |
+| 5 — Inventory Service    | 14          | **12** | 0             | 2             |
 | 6 — Order Service        | 24          | 0      | 0             | 24            |
 | 7 — Table Service        | 17          | 0      | 0             | 17            |
 | 8 — Staff Service        | 12          | 0      | 0             | 12            |
@@ -338,7 +338,7 @@
 | 12 — Security            | 10          | 0      | 0             | 10            |
 | 13 — Testing             | 14          | 1      | 0             | 13            |
 | 14 — CI/CD               | 7           | 0      | 0             | 7             |
-| **TOTAL**                | **211**     | **90** | **0**         | **121**       |
+| **TOTAL**                | **211**     | **102** | **0**        | **109**       |
 
 > Update this table and individual task statuses as development progresses.  
 > Change ⏳ → 🔄 when starting · 🔄 → ✅ when complete · ❌ if blocked (add reason in Notes).
