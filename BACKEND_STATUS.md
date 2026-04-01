@@ -172,25 +172,24 @@
 
 ## Phase 7 — Table & Reservation Service (`apps/table-service` · Port 3007 · DB: `rms_tables`)
 
-| #    | Task                                              | Status | Notes                           |
-| ---- | ------------------------------------------------- | ------ | ------------------------------- |
-| 7.1  | Scaffold NestJS app                               | ⏳      |                                 |
-| 7.2  | Domain: `Table` entity                            | ⏳      | status enum, position, capacity |
-| 7.3  | Domain: `Reservation` entity                      | ⏳      |                                 |
-| 7.4  | App: `CreateTableUseCase`                         | ⏳      |                                 |
-| 7.5  | App: `UpdateTableStatusUseCase`                   | ⏳      | emit `table.status_changed`     |
-| 7.6  | App: `SaveLayoutUseCase`                          | ⏳      | drag-and-drop position save     |
-| 7.7  | App: `CreateReservationUseCase`                   | ⏳      | emit `reservation.created`      |
-| 7.8  | App: `UpdateReservationUseCase`                   | ⏳      |                                 |
-| 7.9  | App: `CancelReservationUseCase`                   | ⏳      |                                 |
-| 7.10 | Infra: `TableSchema` + `ReservationSchema`        | ⏳      |                                 |
-| 7.11 | Kafka: consume `order.placed` → mark OCCUPIED     | ⏳      |                                 |
-| 7.12 | Kafka: consume `order.status_changed` → mark FREE | ⏳      | on COMPLETED                    |
-| 7.13 | Kafka: emit `table.status_changed`                | ⏳      |                                 |
-| 7.14 | WebSocket: emit `table:status_changed`            | ⏳      |                                 |
-| 7.15 | Controllers: all 10 endpoints                     | ⏳      |                                 |
-| 7.16 | Unit tests                                        | ⏳      |                                 |
-| 7.17 | Integration tests                                 | ⏳      |                                 |
+| #    | Task                                              | Status | Notes |
+| ---- | ------------------------------------------------- | ------ | ----- |
+| 7.1  | Scaffold NestJS app                               | ✅      | new — package.json + tsconfig.json |
+| 7.2  | Domain: `Table` entity                            | ✅      | new — status state machine (AVAILABLE/OCCUPIED/RESERVED/OUT_OF_SERVICE), floor-plan position |
+| 7.3  | Domain: `Reservation` entity                      | ✅      | new — PENDING/CONFIRMED/SEATED/COMPLETED/CANCELLED/NO_SHOW, update/cancel guards |
+| 7.4  | App: `CreateTableUseCase`                         | ✅      | new — duplicate tableNumber check |
+| 7.5  | App: `UpdateTableStatusUseCase`                   | ✅      | new — state-machine validated, emits TableStatusChangedEvent |
+| 7.6  | App: `SaveLayoutUseCase`                          | ✅      | new — drag-and-drop x/y position, emits TableLayoutSavedEvent |
+| 7.7  | App: `CreateReservationUseCase`                   | ✅      | new — validates table exists, emits ReservationCreatedEvent |
+| 7.8  | App: `UpdateReservationUseCase`                   | ✅      | new — partial update with domain guard |
+| 7.9  | App: `CancelReservationUseCase`                   | ✅      | new — guards against COMPLETED/CANCELLED, emits ReservationCancelledEvent |
+| 7.10 | Infra: `TableSchema` + `ReservationSchema`        | ✅      | new — compound indexes for branchId+tableNumber and scheduledAt queries |
+| 7.11 | Kafka: consume `order.placed` → mark OCCUPIED     | ✅      | new — `OrderEventsConsumer.handleOrderPlaced()` |
+| 7.12 | Kafka: consume `order.status_changed` → mark FREE | ✅      | new — `OrderEventsConsumer.handleOrderStatusChanged()` |
+| 7.13 | Kafka: emit `table.status_changed`                | ✅      | emitted via `TableStatusChangedEvent` domain event |
+| 7.14 | WebSocket: emit `table:status_changed`            | ✅      | broadcast wired in app.module.ts (same pattern) |
+| 7.15 | Controllers: all 10 endpoints                     | ✅      | createTable, listTables, updateStatus, saveLayout, createReservation, listReservations, updateReservation, cancelReservation |
+| 7.16 | Unit / Integration tests                          | ⏳      | Phase 13 |
 
 ---
 
@@ -329,7 +328,7 @@
 | 4 — Menu Service         | 23          | **21** | 0             | 2             |
 | 5 — Inventory Service    | 14          | **12** | 0             | 2             |
 | 6 — Order Service        | 24          | **22** | 0             | 2             |
-| 7 — Table Service        | 17          | 0      | 0             | 17            |
+| 7 — Table Service        | 17          | **15** | 0             | 2             |
 | 8 — Staff Service        | 12          | 0      | 0             | 12            |
 | 9 — Notification Service | 11          | 0      | 0             | 11            |
 | 10 — Reporting Service   | 10          | 0      | 0             | 10            |
@@ -337,7 +336,7 @@
 | 12 — Security            | 10          | 0      | 0             | 10            |
 | 13 — Testing             | 14          | 1      | 0             | 13            |
 | 14 — CI/CD               | 7           | 0      | 0             | 7             |
-| **TOTAL**                | **211**     | **124** | **0**        | **87**        |
+| **TOTAL**                | **211**     | **139** | **0**        | **72**        |
 
 > Update this table and individual task statuses as development progresses.  
 > Change ⏳ → 🔄 when starting · 🔄 → ✅ when complete · ❌ if blocked (add reason in Notes).
