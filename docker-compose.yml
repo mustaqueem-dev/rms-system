@@ -217,8 +217,51 @@ services:
       redis: { condition: service_healthy }
       kafka: { condition: service_healthy }
 
-  api-gateway:
+  table-service:
     build:
+      context: .
+      dockerfile: apps/table-service/Dockerfile
+    container_name: rms-table-service
+    restart: unless-stopped
+    ports:
+      - "3007:3007"
+    environment:
+      NODE_ENV:          development
+      PORT:              3007
+      MONGODB_URI:       mongodb://rms:rms_secret@mongodb:27017
+      MONGODB_DB_NAME:   rms_tables
+      REDIS_HOST:        redis
+      REDIS_PORT:        6379
+      JWT_SECRET:        dev-secret-change-in-prod
+      KAFKA_BROKERS:     kafka:9092
+      LOG_LEVEL:         info
+    depends_on:
+      mongodb: { condition: service_healthy }
+      redis:   { condition: service_healthy }
+      kafka:   { condition: service_healthy }
+
+  staff-service:
+    build:
+      context: .
+      dockerfile: apps/staff-service/Dockerfile
+    container_name: rms-staff-service
+    restart: unless-stopped
+    ports:
+      - "3008:3008"
+    environment:
+      NODE_ENV:          development
+      PORT:              3008
+      MONGODB_URI:       mongodb://rms:rms_secret@mongodb:27017
+      MONGODB_DB_NAME:   rms_staff
+      JWT_SECRET:        dev-secret-change-in-prod
+      KAFKA_BROKERS:     kafka:9092
+      LOG_LEVEL:         info
+    depends_on:
+      mongodb: { condition: service_healthy }
+      kafka:   { condition: service_healthy }
+
+  api-gateway:
+    build: 
       context: .
       dockerfile: apps/api-gateway/Dockerfile
     container_name: rms-api-gateway
@@ -226,17 +269,29 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV:              development
-      PORT:                  3000
-      AUTH_SERVICE_URL:      http://auth-service:3004
-      MENU_SERVICE_URL:      http://menu-service:3001
-      INVENTORY_SERVICE_URL: http://inventory-service:3002
-      ORDER_SERVICE_URL:     http://order-service:3003
+      NODE_ENV:                  development
+      PORT:                      3000
+      JWT_SECRET:                dev-secret-change-in-prod
+      CORS_ALLOWED_ORIGINS:      http://localhost:4000
+      AUTH_SERVICE_URL:          http://auth-service:3004
+      MENU_SERVICE_URL:          http://menu-service:3001
+      INVENTORY_SERVICE_URL:     http://inventory-service:3002
+      ORDER_SERVICE_URL:         http://order-service:3003
+      TABLE_SERVICE_URL:         http://table-service:3007
+      STAFF_SERVICE_URL:         http://staff-service:3008
+      REPORTING_SERVICE_URL:     http://reporting-service:3006
+      NOTIFICATION_SERVICE_URL:  http://notification-service:3005
+      THROTTLE_TTL:              60
+      THROTTLE_LIMIT_IP:         1000
+      THROTTLE_LIMIT_USER:       100
+      LOG_LEVEL:                 info
     depends_on:
       - auth-service
       - menu-service
       - inventory-service
       - order-service
+      - table-service
+      - staff-service
 
 volumes:
   mongo_data:

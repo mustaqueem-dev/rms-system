@@ -14,6 +14,13 @@
     "declarationMap": true,
     "sourceMap": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "baseUrl": ".",
+    "paths": {
+      "@rms/shared-kernel": ["packages/shared-kernel/src/index.ts"],
+      "@rms/shared-kernel/*": ["packages/shared-kernel/src/*"],
+      "@rms/event-contracts": ["packages/event-contracts/src/index.ts"],
+      "@rms/event-contracts/*": ["packages/event-contracts/src/*"]
+    }
   }
 }
