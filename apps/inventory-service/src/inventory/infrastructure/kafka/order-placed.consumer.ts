@@ -8,19 +8,19 @@
 // without that dependency we expose a plain service with a `handle()` method
 // that the microservice transport calls via NestJS dependency injection.
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
 import {
   DeductStockUseCase,
   DeductStockCommand,
 } from '../../application/use-cases/deduct-stock.use-case';
 
 export interface OrderPlacedPayload {
-  orderId:     string;
-  branchId:    string;
+  orderId: string;
+  branchId: string;
   franchiseId: string;
   items: Array<{
     menuItemId: string;
-    quantity:   number;
+    quantity: number;
   }>;
 }
 
@@ -36,20 +36,20 @@ export interface OrderPlacedPayload {
  * This keeps @nestjs/microservices out of the domain/application layers
  * and lets us test handle() without a Kafka broker.
  */
-@Injectable()
+@Controller()
 export class OrderPlacedConsumer {
   private readonly logger = new Logger(OrderPlacedConsumer.name);
 
-  constructor(private readonly deductStock: DeductStockUseCase) {}
+  constructor(private readonly deductStock: DeductStockUseCase) { }
 
   async handle(payload: OrderPlacedPayload): Promise<void> {
     this.logger.log(`Processing order.placed for order=${payload.orderId}`);
 
     const cmd: DeductStockCommand = {
-      orderId:     payload.orderId,
-      branchId:    payload.branchId,
+      orderId: payload.orderId,
+      branchId: payload.branchId,
       franchiseId: payload.franchiseId,
-      items:       payload.items,
+      items: payload.items,
     };
 
     const result = await this.deductStock.execute(cmd);

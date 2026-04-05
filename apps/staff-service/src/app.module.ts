@@ -5,11 +5,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule }    from '@nestjs/mongoose';
 import { StaffModule }       from './staff/staff.module';
 
+import appConfig from './config/app.config';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      load: [appConfig],
     }),
     MongooseModule.forRootAsync({
       inject:     [ConfigService],
