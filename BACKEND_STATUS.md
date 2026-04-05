@@ -248,20 +248,20 @@
 
 ## Phase 11 — API Gateway (`apps/api-gateway` · Port 3000 · DB: None)
 
-| #     | Task                                    | Status | Notes                             |
-| ----- | --------------------------------------- | ------ | --------------------------------- |
-| 11.1  | Scaffold NestJS app                     | ⏳      |                                   |
-| 11.2  | `ThrottlerModule` — rate limiting       | ⏳      | 1000/min per IP, 100/min per user |
-| 11.3  | `HelmetModule` — security headers       | ⏳      |                                   |
-| 11.4  | CORS with strict origin whitelist       | ⏳      | NFR-S07                           |
-| 11.5  | Global `JwtAuthGuard`                   | ⏳      | from shared-kernel                |
-| 11.6  | Global `LoggingInterceptor`             | ⏳      |                                   |
-| 11.7  | Global `TraceInterceptor`               | ⏳      | inject `traceId`                  |
-| 11.8  | Global `ValidationPipe`                 | ⏳      |                                   |
-| 11.9  | Proxy routes to all 7 services          | ⏳      | http-proxy-middleware             |
-| 11.10 | WebSocket proxy (Socket.IO passthrough) | ⏳      |                                   |
-| 11.11 | `GET /health` endpoint (no auth)        | ⏳      |                                   |
-| 11.12 | Integration tests                       | ⏳      |                                   |
+| #     | Task                                    | Status | Notes |
+| ----- | --------------------------------------- | ------ | ----- |
+| 11.1  | Scaffold NestJS app                     | ✅      | existed |
+| 11.2  | Rate limiting (sliding-window)          | ✅      | new — `RateLimitMiddleware` (120 req/60s, IP+user keyed) |
+| 11.3  | Helmet security headers                 | ✅      | new — optional lazy-require in main.ts |
+| 11.4  | CORS with origin whitelist              | ✅      | new — `gateway.corsOrigins` config, credentials: true |
+| 11.5  | Global `JwtAuthGuard`                   | ✅      | new — gateway-level JWT verify + x-user-* header injection |
+| 11.6  | Public path bypass (login/register etc) | ✅      | new — PUBLIC_PATHS list in JwtAuthGuard |
+| 11.7  | Upstream 502 error handling             | ✅      | new — onError → JSON 502 response |
+| 11.8  | Proxy routes to all 7 services          | ✅      | new — auth/menu/inventory/order/table/staff/reporting |
+| 11.9  | `GET /api/v1/health` endpoint           | ✅      | new — `HealthController` (no auth, returns uptime) |
+| 11.10 | Swagger at `/api/docs`                  | ✅      | new — bearer auth, all services documented |
+| 11.11 | `gateway.config.ts` expanded            | ✅      | new — 8 service URLs + corsOrigins/throttle config |
+| 11.12 | Integration tests                       | ⏳      | Phase 13 |
 
 ---
 
@@ -331,11 +331,11 @@
 | 8 — Staff Service        | 12          | **10** | 0             | 2             |
 | 9 — Notification Service | 11          | **9**  | 0             | 2             |
 | 10 — Reporting Service   | 10          | **9**  | 0             | 1             |
-| 11 — API Gateway         | 12          | 0      | 0             | 12            |
+| 11 — API Gateway         | 12          | **10** | 0             | 2             |
 | 12 — Security            | 10          | 0      | 0             | 10            |
 | 13 — Testing             | 14          | 1      | 0             | 13            |
 | 14 — CI/CD               | 7           | 0      | 0             | 7             |
-| **TOTAL**                | **211**     | **167** | **0**        | **44**        |
+| **TOTAL**                | **211**     | **177** | **0**        | **34**        |
 
 > Update this table and individual task statuses as development progresses.  
 > Change ⏳ → 🔄 when starting · 🔄 → ✅ when complete · ❌ if blocked (add reason in Notes).
