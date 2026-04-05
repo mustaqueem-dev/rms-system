@@ -5,6 +5,7 @@ import { ScheduleModule }    from '@nestjs/schedule';
 import { BullModule }        from '@nestjs/bullmq';
 import { MongooseModule }    from '@nestjs/mongoose';
 import { ConfigService }     from '@nestjs/config';
+import { JwtModule }         from '@nestjs/jwt';
 
 // ── Infrastructure ────────────────────────────────────────────────────────────
 import { AnalyticsService }   from './infrastructure/analytics.service';
@@ -32,6 +33,13 @@ import { ReportController }   from './presentation/report.controller';
     BullModule.registerQueue({ name: 'reports-queue' }),
 
     ScheduleModule.forRoot(),
+
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get('JWT_SECRET', 'fallback-secret'),
+      }),
+    }),
   ],
   controllers: [ReportController],
   providers: [

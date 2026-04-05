@@ -26,6 +26,9 @@ export class CreateTableUseCase {
     if (result.isFailure) throw new BusinessRuleViolationError(result.error);
 
     await this.repo.save(result.value);
+    await this.ep.publishAll(result.value.domainEvents);
+    result.value.clearDomainEvents();
+    
     return result.value.id;
   }
 }

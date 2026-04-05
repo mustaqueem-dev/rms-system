@@ -69,6 +69,7 @@ export class Table extends BaseEntity<TableProps> {
     ]);
     if (guard.isFailure) return Result.fail(guard.error);
     if (props.capacity < 1) return Result.fail('capacity must be ≥ 1');
+    if (props.tableNumber < 1) return Result.fail('tableNumber must be ≥ 1');
 
     const now = new Date();
     return Result.ok(new Table({

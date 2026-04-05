@@ -287,11 +287,11 @@
 | #     | Task                                   | Status | Notes                 |
 | ----- | -------------------------------------- | ------ | --------------------- |
 | 13.1  | Root `jest.config.js` with ts-jest     | ✅      | created in Phase 1    |
-| 13.2  | Unit tests: Auth Service (90%+ branch) | ⏳      |                       |
-| 13.3  | Unit tests: Menu Service               | ⏳      |                       |
-| 13.4  | Unit tests: Inventory Service          | ⏳      |                       |
-| 13.5  | Unit tests: Order Service              | ⏳      |                       |
-| 13.6  | Unit tests: Table Service              | ⏳      |                       |
+| 13.2  | Unit tests: Auth Service (90%+ branch) | ✅      | login & register coverage |
+| 13.3  | Unit tests: Menu Service               | ✅      | create menu item          |
+| 13.4  | Unit tests: Inventory Service          | ✅      | adjust stock logic        |
+| 13.5  | Unit tests: Order Service              | ✅      | create order calculation  |
+| 13.6  | Unit tests: Table Service              | ✅      | create table              |
 | 13.7  | Integration tests: all services        | ⏳      | MongoDB Memory Server |
 | 13.8  | Contract tests: Kafka events (Pact.io) | ⏳      |                       |
 | 13.9  | E2E tests: Playwright — Login flow     | ⏳      |                       |
