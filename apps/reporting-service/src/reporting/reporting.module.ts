@@ -24,7 +24,7 @@ import { ReportController }   from './presentation/report.controller';
       connectionName: 'reporting',
       inject:  [ConfigService],
       useFactory: (config: ConfigService) => ({
-        uri: config.getOrThrow<string>('reporting.mongoUri'),
+        uri: config.get<string>('reporting.mongoUri', 'mongodb://localhost:27017/rms_reporting'),
         readPreference: 'secondaryPreferred',
       }),
     }),
