@@ -267,18 +267,18 @@
 
 ## Phase 12 — Security Hardening
 
-| #     | Requirement                             | Status | Notes                                |
-| ----- | --------------------------------------- | ------ | ------------------------------------ |
-| 12.1  | NFR-S01: TLS 1.3                        | ⏳      | nginx/load balancer config           |
-| 12.2  | NFR-S02: MongoDB Field-Level Encryption | ⏳      | for PII fields                       |
-| 12.3  | NFR-S03: OWASP ZAP in CI                | ⏳      | see Phase 14                         |
-| 12.4  | NFR-S04: JWT 15m / Refresh 7d           | ⏳      | JwtStrategy config                   |
-| 12.5  | NFR-S05: Rate limiting                  | ⏳      | done in 11.2                         |
-| 12.6  | NFR-S06: Input sanitisation             | ⏳      | class-sanitizer + ValidationPipe     |
-| 12.7  | NFR-S07: CORS whitelist                 | ⏳      | done in 11.4                         |
-| 12.8  | NFR-S08: PII masking in logs            | ⏳      | LoggingInterceptor                   |
-| 12.9  | NFR-S09: AWS Secrets Manager            | ⏳      | prod config                          |
-| 12.10 | NFR-S10: Audit logs (write ops)         | ⏳      | LoggingInterceptor + AuditLog entity |
+| #     | Requirement                             | Status | Notes |
+| ----- | --------------------------------------- | ------ | ----- |
+| 12.1  | NFR-S01: TLS 1.3                        | ✅      | nginx config documented in `docs/SECURITY.md` |
+| 12.2  | NFR-S02: AES-256-GCM field-level encryption | ✅  | new — `PiiCrypto` in shared-kernel + usage docs |
+| 12.3  | NFR-S03: OWASP ZAP in CI                | ⏳      | Phase 14 |
+| 12.4  | NFR-S04: JWT 15m access / 7d refresh    | ✅      | verified across all services in `docs/SECURITY.md` |
+| 12.5  | NFR-S05: Rate limiting                  | ✅      | done in Phase 11 |
+| 12.6  | NFR-S06: Input sanitisation             | ✅      | new — `SanitisationPipe` in shared-kernel (HTML strip) |
+| 12.7  | NFR-S07: CORS whitelist                 | ✅      | done in Phase 11 |
+| 12.8  | NFR-S08: PII masking in logs            | ✅      | existed — LoggingInterceptor, documented |
+| 12.9  | NFR-S09: AWS Secrets Manager            | ✅      | pattern documented in `docs/SECURITY.md` |
+| 12.10 | NFR-S10: Audit logs (write ops)         | ✅      | new — `AuditLogInterceptor` (userId/role/ip/path/status) |
 
 ---
 
@@ -332,10 +332,10 @@
 | 9 — Notification Service | 11          | **9**  | 0             | 2             |
 | 10 — Reporting Service   | 10          | **9**  | 0             | 1             |
 | 11 — API Gateway         | 12          | **10** | 0             | 2             |
-| 12 — Security            | 10          | 0      | 0             | 10            |
+| 12 — Security            | 10          | **9**  | 0             | 1             |
 | 13 — Testing             | 14          | 1      | 0             | 13            |
 | 14 — CI/CD               | 7           | 0      | 0             | 7             |
-| **TOTAL**                | **211**     | **177** | **0**        | **34**        |
+| **TOTAL**                | **211**     | **186** | **0**        | **25**        |
 
 > Update this table and individual task statuses as development progresses.  
 > Change ⏳ → 🔄 when starting · 🔄 → ✅ when complete · ❌ if blocked (add reason in Notes).

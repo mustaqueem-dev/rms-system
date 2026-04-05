@@ -96,3 +96,8 @@ export { ok, okPaginated, created, noContent, fail } from './response/envelope';
 
 // ─── Filters ─────────────────────────────────────────────────────────────────
 export { AllExceptionsFilter }         from './filters/all-exceptions.filter';
+
+// ─── Security ─────────────────────────────────────────────────────────────────
+export { PiiCrypto }               from './security/pii-crypto';
+export { AuditLogInterceptor }     from './security/audit-log.interceptor';
+export { SanitisationPipe }        from './security/sanitisation.pipe';
